@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -20,48 +21,71 @@ func NewUserManager(dataBase *pgxpool.Pool) *userManager {
 	}
 }
 
-func (um *userManager) GenerarNuevoUsuario(ctx context.Context, newUsuario models.Usuario) error {
+// retorna el id del usuario generado
+func (um *userManager) GenerarNuevoUsuario(ctx context.Context, newUsuario models.Usuario) (int, error) {
 	query := `INSERT INTO usuarios(email, password_hash)
-				VALUES ($1, $2)`
+				VALUES ($1, $2)
+				RETURNING id;`
 
-	if _, err := um.db.Exec(ctx, query, newUsuario.Email, newUsuario.Password_hash); err != nil {
+	var id int
+
+	err := um.db.QueryRow(ctx, query, newUsuario.Email, newUsuario.Password_hash).Scan(&id)
+
+	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 
 			if pgErr.Code == "23505" && pgErr.ConstraintName == "email_unico" {
-				return fmt.Errorf("No se crea el usuario, el mail ya existe: %v", err)
+				return 0, ErrUsuarioExiste
 			}
-			return fmt.Errorf("No se crea el usuario, error inesperado: %v", err)
+			return 0, fmt.Errorf("Error inesperado, detalle: %v", err)
 		}
 	}
 
-	return nil
+	return id, nil
 }
 
-func (um *userManager) ComprobarExisteUsuario(ctx context.Context, usuario models.Usuario) bool {
-	query := `SELECT password_hash FROM usuarios
+func (um *userManager) ObternerId(ctx context.Context, usuario models.Usuario) (int, error) {
+	query := `SELECT id, password_hash FROM usuarios
 				WHERE email = $1`
 
 	var passwordHashEncontrado string
+	var id int
 
-	err := um.db.QueryRow(ctx, query, usuario.Email).Scan(&passwordHashEncontrado)
+	err := um.db.QueryRow(ctx, query, usuario.Email).Scan(&id, &passwordHashEncontrado)
 
-	if err != nil {
-		return false // si devuelve error, es que no existe el usuario en el db
+	if errors.Is(err, pgx.ErrNoRows) {
+		return 0, ErrUsuarioNoExiste
 	}
 
-	return passwordHashEncontrado == usuario.Password_hash
+	if passwordHashEncontrado != usuario.Password_hash {
+		return 0, ErrPasswordIncorrecto
+	}
+
+	if err != nil {
+		return 0, fmt.Errorf("Error inesperado, detalle: %v", err)
+	}
+
+	return id, nil
 
 }
 
-func (um *userManager) ModifcarContraseña(ctx context.Context, usuario models.Usuario, nuevoPasswordHash string) error {
+func (um *userManager) ModifcarContraseña(ctx context.Context, IdUsuario int, nuevoPasswordHash string) error {
 
 	queryUpdate := `UPDATE usuarios
 				SET password_hash = $1
-				WHERE email = $2`
+				WHERE id = $2
+				RETURNING id`
+	var id int
 
-	if _, err := um.db.Exec(ctx, queryUpdate, nuevoPasswordHash, usuario.Email); err != nil {
-		return fmt.Errorf("Error al actualizar el password_hash: %v", err)
+	err := um.db.QueryRow(ctx, queryUpdate, nuevoPasswordHash, IdUsuario).Scan(&id)
+
+	if errors.Is(err, pgx.ErrNoRows) { // sql.ErrNoRows) {
+		return ErrUsuarioNoExiste
+	}
+
+	if err != nil {
+		return fmt.Errorf("Error inesperado, detalle: %v", err)
 	}
 
 	return nil

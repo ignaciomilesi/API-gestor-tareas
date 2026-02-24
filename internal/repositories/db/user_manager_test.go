@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -33,7 +34,7 @@ func TestGenerarNuevoUsuario(t *testing.T) {
 	tests := []struct {
 		name          string
 		usuarioTest   models.Usuario
-		errorEsperado bool
+		errorEsperado error
 	}{
 		{
 			name: "Email duplicado",
@@ -41,7 +42,7 @@ func TestGenerarNuevoUsuario(t *testing.T) {
 				Email:         "prueba@prueba.com",
 				Password_hash: "4567",
 			},
-			errorEsperado: true,
+			errorEsperado: ErrUsuarioExiste,
 		},
 	}
 
@@ -54,8 +55,13 @@ func TestGenerarNuevoUsuario(t *testing.T) {
 
 		t.Run(test.name, func(t *testing.T) {
 
-			err := um.GenerarNuevoUsuario(ctx, test.usuarioTest)
-			if (err != nil) && !test.errorEsperado {
+			_, err := um.GenerarNuevoUsuario(ctx, test.usuarioTest)
+
+			if err == nil {
+				t.Errorf("Error. Se esperaba que falle")
+			}
+
+			if !errors.Is(err, test.errorEsperado) {
 
 				t.Errorf("Error no esperado. Detalle: %v\n\n", err)
 			}
@@ -64,12 +70,12 @@ func TestGenerarNuevoUsuario(t *testing.T) {
 
 }
 
-func TestComprobarExisteUsuario(t *testing.T) {
+func TestObternerId(t *testing.T) {
 
 	tests := []struct {
-		name              string
-		usuarioTest       models.Usuario
-		resultadoEsperado bool
+		name          string
+		usuarioTest   models.Usuario
+		errorEsperado error
 	}{
 		{
 			name: "mail correcto, password correcto",
@@ -77,7 +83,7 @@ func TestComprobarExisteUsuario(t *testing.T) {
 				Email:         "prueba@prueba.com",
 				Password_hash: "4567",
 			},
-			resultadoEsperado: true,
+			errorEsperado: nil,
 		},
 		{
 			name: "mail incorrecto, password correcto",
@@ -85,7 +91,7 @@ func TestComprobarExisteUsuario(t *testing.T) {
 				Email:         "mailPruebaIncorrecto@prueba.com",
 				Password_hash: "4567",
 			},
-			resultadoEsperado: false,
+			errorEsperado: ErrUsuarioNoExiste,
 		},
 		{
 			name: "mail correcto, password incorrecto",
@@ -93,7 +99,7 @@ func TestComprobarExisteUsuario(t *testing.T) {
 				Email:         "prueba@prueba.com",
 				Password_hash: "password incorrecto",
 			},
-			resultadoEsperado: false,
+			errorEsperado: ErrPasswordIncorrecto,
 		},
 	}
 
@@ -105,11 +111,12 @@ func TestComprobarExisteUsuario(t *testing.T) {
 
 		t.Run(test.name, func(t *testing.T) {
 
-			resultado := um.ComprobarExisteUsuario(ctx, test.usuarioTest)
-			if resultado != test.resultadoEsperado {
+			_, err := um.ObternerId(ctx, test.usuarioTest)
+
+			if !errors.Is(err, test.errorEsperado) {
 
 				t.Errorf(" -- Error no esperado: se esperaba %t pero se obtuvo %t\n\n",
-					test.resultadoEsperado, resultado)
+					test.errorEsperado, err)
 			}
 		})
 	}
@@ -119,24 +126,18 @@ func TestComprobarExisteUsuario(t *testing.T) {
 func TestModifcarContraseña(t *testing.T) {
 	tests := []struct {
 		name          string
-		usuarioTest   models.Usuario
-		errorEsperado bool
+		id            int
+		errorEsperado error
 	}{
 		{
-			name: "usuario incorrecto",
-			usuarioTest: models.Usuario{
-				Email:         "emailIncorecto@prueba.com",
-				Password_hash: "4567",
-			},
-			errorEsperado: true,
+			name:          "usuario incorrecto",
+			id:            999999,
+			errorEsperado: ErrUsuarioNoExiste,
 		},
 		{
-			name: "actualización de password",
-			usuarioTest: models.Usuario{
-				Email:         "emailPruebaModif@prueba.com",
-				Password_hash: "asdf",
-			},
-			errorEsperado: false,
+			name:          "actualización de password",
+			id:            3,
+			errorEsperado: nil,
 		},
 	}
 
@@ -148,11 +149,12 @@ func TestModifcarContraseña(t *testing.T) {
 
 		t.Run(test.name, func(t *testing.T) {
 
-			err := um.ModifcarContraseña(ctx, test.usuarioTest, "4567")
+			err := um.ModifcarContraseña(ctx, test.id, "45678")
 
-			if (err != nil) && !test.errorEsperado {
+			if !errors.Is(err, test.errorEsperado) {
 
-				t.Errorf("Error no esperado. Detalle: %v\n\n", err)
+				t.Errorf(" -- Error no esperado: se esperaba %t pero se obtuvo %t\n\n",
+					test.errorEsperado, err)
 			}
 
 		})
