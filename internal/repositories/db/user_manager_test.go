@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -23,12 +24,14 @@ func conectarBaseDeDatosTest() *pgxpool.Pool {
 		os.Getenv("DB_PASS"),
 		os.Getenv("DB_NAME"))
 
-	db, err := NewGestorDb(dburl)
+	ctx := context.Background()
+	db, err := NewGestorDb(ctx, dburl)
 	if err != nil {
 		log.Fatal("Error conectar base de datos", err)
 	}
 	return db
 }
+
 func TestGenerarNuevoUsuario(t *testing.T) {
 
 	tests := []struct {

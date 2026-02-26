@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func NewGestorDb(databaseURL string) (*pgxpool.Pool, error) {
+func NewGestorDb(ctx context.Context, databaseURL string) (*pgxpool.Pool, error) {
 
 	config, err := pgxpool.ParseConfig(databaseURL)
 	if err != nil {
@@ -20,7 +20,7 @@ func NewGestorDb(databaseURL string) (*pgxpool.Pool, error) {
 	config.MinConns = 5
 	config.MaxConnLifetime = 5 * time.Minute
 
-	pool, err := pgxpool.NewWithConfig(context.Background(), config)
+	pool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
 		return nil, fmt.Errorf("no se pudo conectar a la base de datos: %v", err)
 	}

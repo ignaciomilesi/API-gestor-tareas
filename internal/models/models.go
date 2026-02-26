@@ -5,6 +5,7 @@ import (
 )
 
 type Tarea struct {
+	Id               *int
 	Titulo           string
 	Fecha_creacion   time.Time
 	Completada       bool
@@ -13,6 +14,7 @@ type Tarea struct {
 }
 
 type Usuario struct {
+	Id            *int
 	Email         string
 	Password_hash string
 }
