@@ -1,14 +1,16 @@
 package db
 
 import (
-	"api-gestor-tareas/internal/models"
 	"context"
 	"errors"
 	"fmt"
 
+	"api-gestor-tareas/internal/domain"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type userManager struct {
@@ -22,7 +24,7 @@ func NewUserManager(dataBase *pgxpool.Pool) *userManager {
 }
 
 // retorna el id del usuario generado
-func (um *userManager) GenerarNuevoUsuario(ctx context.Context, newUsuario models.Usuario) (int, error) {
+func (um *userManager) GenerarNuevoUsuario(ctx context.Context, newUsuario domain.Usuario) (int, error) {
 	query := `INSERT INTO usuarios(email, password_hash)
 				VALUES ($1, $2)
 				RETURNING id;`
@@ -36,7 +38,7 @@ func (um *userManager) GenerarNuevoUsuario(ctx context.Context, newUsuario model
 		if errors.As(err, &pgErr) {
 
 			if pgErr.Code == "23505" && pgErr.ConstraintName == "email_unico" {
-				return 0, ErrUsuarioExiste
+				return 0, domain.ErrEmailDuplicado
 			}
 			return 0, fmt.Errorf("Error inesperado, detalle: %v", err)
 		}
@@ -45,7 +47,7 @@ func (um *userManager) GenerarNuevoUsuario(ctx context.Context, newUsuario model
 	return id, nil
 }
 
-func (um *userManager) ObternerId(ctx context.Context, usuario models.Usuario) (int, error) {
+func (um *userManager) ObternerId(ctx context.Context, usuario domain.Usuario) (int, error) {
 	query := `SELECT id, password_hash FROM usuarios
 				WHERE email = $1`
 
@@ -54,16 +56,16 @@ func (um *userManager) ObternerId(ctx context.Context, usuario models.Usuario) (
 
 	err := um.db.QueryRow(ctx, query, usuario.Email).Scan(&id, &passwordHashEncontrado)
 
-	if errors.Is(err, pgx.ErrNoRows) {
-		return 0, ErrUsuarioNoExiste
-	}
-
-	if passwordHashEncontrado != usuario.Password_hash {
-		return 0, ErrPasswordIncorrecto
-	}
-
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return 0, domain.ErrEmailNoEncontrado
+		}
 		return 0, fmt.Errorf("Error inesperado, detalle: %v", err)
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(passwordHashEncontrado), []byte(usuario.Password_hash))
+	if err != nil {
+		return 0, domain.ErrPasswordIncorrecto
 	}
 
 	return id, nil
@@ -81,7 +83,7 @@ func (um *userManager) ModifcarContraseña(ctx context.Context, IdUsuario int, n
 	err := um.db.QueryRow(ctx, queryUpdate, nuevoPasswordHash, IdUsuario).Scan(&id)
 
 	if errors.Is(err, pgx.ErrNoRows) { // sql.ErrNoRows) {
-		return ErrUsuarioNoExiste
+		return domain.ErrIdNoEncontrado
 	}
 
 	if err != nil {

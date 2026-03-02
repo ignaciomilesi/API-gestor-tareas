@@ -23,3 +23,16 @@ func main() {
 		log.Fatalf("failed to run server: %v", err)
 	}
 }
+
+/*
+repo := repository.NewTaskRepository(db)
+service := services.NewTaskService(repo)
+handler := handlers.NewTaskHandler(service)
+
+auth := r.Group("/tasks")
+auth.Use(middleware.JWTAuth(secret))
+{
+    auth.POST("", handler.CreateTask)
+    auth.GET("", handler.GetTasks)
+}
+*/

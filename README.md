@@ -10,10 +10,10 @@ Estructura de carpetas
   - handlers/      → HTTP / Gin (requests, responses, status codes)
   - services/      → lógica de negocio y casos de uso
   - repositories/
-    - db/ → acceso a datos (SQL, DB)
+    - db/          → acceso a datos (SQL, DB)
   - models/        → structs del dominio (entidades)
   - middleware/    → middlewares (auth, logs, permisos)
 
 - config/          → configuración y variables de entorno
-docker/          → imágenes y config Docker
+docker/            → imágenes y config Docker
 ```

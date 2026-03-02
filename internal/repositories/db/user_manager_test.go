@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 
-	"api-gestor-tareas/internal/models"
+	"api-gestor-tareas/internal/domain"
 )
 
 func conectarBaseDeDatosTest() *pgxpool.Pool {
@@ -36,16 +36,16 @@ func TestGenerarNuevoUsuario(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		usuarioTest   models.Usuario
+		usuarioTest   domain.Usuario
 		errorEsperado error
 	}{
 		{
 			name: "Email duplicado",
-			usuarioTest: models.Usuario{
+			usuarioTest: domain.Usuario{
 				Email:         "prueba@prueba.com",
 				Password_hash: "4567",
 			},
-			errorEsperado: ErrUsuarioExiste,
+			errorEsperado: domain.ErrEmailDuplicado,
 		},
 	}
 
@@ -77,12 +77,12 @@ func TestObternerId(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		usuarioTest   models.Usuario
+		usuarioTest   domain.Usuario
 		errorEsperado error
 	}{
 		{
 			name: "mail correcto, password correcto",
-			usuarioTest: models.Usuario{
+			usuarioTest: domain.Usuario{
 				Email:         "prueba@prueba.com",
 				Password_hash: "4567",
 			},
@@ -90,19 +90,19 @@ func TestObternerId(t *testing.T) {
 		},
 		{
 			name: "mail incorrecto, password correcto",
-			usuarioTest: models.Usuario{
+			usuarioTest: domain.Usuario{
 				Email:         "mailPruebaIncorrecto@prueba.com",
 				Password_hash: "4567",
 			},
-			errorEsperado: ErrUsuarioNoExiste,
+			errorEsperado: domain.ErrEmailNoEncontrado,
 		},
 		{
 			name: "mail correcto, password incorrecto",
-			usuarioTest: models.Usuario{
+			usuarioTest: domain.Usuario{
 				Email:         "prueba@prueba.com",
 				Password_hash: "password incorrecto",
 			},
-			errorEsperado: ErrPasswordIncorrecto,
+			errorEsperado: domain.ErrPasswordIncorrecto,
 		},
 	}
 
@@ -135,7 +135,7 @@ func TestModifcarContraseña(t *testing.T) {
 		{
 			name:          "usuario incorrecto",
 			id:            999999,
-			errorEsperado: ErrUsuarioNoExiste,
+			errorEsperado: domain.ErrIdNoEncontrado,
 		},
 		{
 			name:          "actualización de password",

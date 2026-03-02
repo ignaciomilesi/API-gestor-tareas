@@ -1,4 +1,4 @@
-package models
+package domain
 
 import (
 	"time"
@@ -6,7 +6,7 @@ import (
 
 type Tarea struct {
 	Id               *int
-	Titulo           string
+	Descripcion      string
 	Fecha_creacion   time.Time
 	Completada       bool
 	Fecha_completada *time.Time

@@ -1,7 +1,7 @@
 package db
 
 import (
-	"api-gestor-tareas/internal/models"
+	"api-gestor-tareas/internal/domain"
 	"errors"
 	"testing"
 	"time"
@@ -11,13 +11,13 @@ func TestRegistrarTarea(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		tareaTest     models.Tarea
+		tareaTest     domain.Tarea
 		errorEsperado error
 	}{
 		{
 			name: "Registro de tarea ok",
-			tareaTest: models.Tarea{
-				Titulo:         "Tarea de prueba2",
+			tareaTest: domain.Tarea{
+				Descripcion:    "Tarea de prueba2",
 				Fecha_creacion: time.Now(),
 				Completada:     true,
 				Id_usuario:     1,
@@ -26,13 +26,13 @@ func TestRegistrarTarea(t *testing.T) {
 		},
 		{
 			name: "Asignar tarea a un usuario inexistente",
-			tareaTest: models.Tarea{
-				Titulo:         "Tarea de prueba",
+			tareaTest: domain.Tarea{
+				Descripcion:    "Tarea de prueba",
 				Fecha_creacion: time.Now(),
 				Completada:     false,
 				Id_usuario:     9999,
 			},
-			errorEsperado: ErrUsuarioAsignadoNoexiste,
+			errorEsperado: domain.ErrUsuarioAsignadoNoexiste,
 		},
 	}
 
@@ -116,7 +116,7 @@ func TestModificarTitulo(t *testing.T) {
 		{
 			name:          "Modificar tarea inexistente",
 			IdTarea:       999,
-			errorEsperado: ErrTareaNoExiste,
+			errorEsperado: domain.ErrTareaNoExiste,
 		},
 	}
 
@@ -155,7 +155,7 @@ func TestMarcarComoCompletada(t *testing.T) {
 		{
 			name:          "Modificar tarea inexistente",
 			IdTarea:       999,
-			errorEsperado: ErrTareaNoExiste,
+			errorEsperado: domain.ErrTareaNoExiste,
 		},
 	}
 

@@ -1,7 +1,7 @@
 package db
 
 import (
-	"api-gestor-tareas/internal/models"
+	"api-gestor-tareas/internal/domain"
 	"context"
 	"errors"
 	"fmt"
@@ -24,7 +24,7 @@ func NewTareasManager(dataBase *pgxpool.Pool) *tareasManager {
 }
 
 // retorna el id del usuario generado
-func (tm *tareasManager) RegistrarTarea(ctx context.Context, newTarea models.Tarea) (int, error) {
+func (tm *tareasManager) RegistrarTarea(ctx context.Context, newTarea domain.Tarea) (int, error) {
 
 	query := `INSERT INTO tareas(titulo, fecha_creacion, completada, fecha_completada, id_usuario)
 				VALUES ($1, $2, $3, $4, $5)
@@ -32,7 +32,7 @@ func (tm *tareasManager) RegistrarTarea(ctx context.Context, newTarea models.Tar
 	var id int
 
 	err := tm.db.QueryRow(ctx, query,
-		newTarea.Titulo,
+		newTarea.Descripcion,
 		newTarea.Fecha_creacion,
 		newTarea.Completada,
 		newTarea.Fecha_completada,
@@ -44,7 +44,7 @@ func (tm *tareasManager) RegistrarTarea(ctx context.Context, newTarea models.Tar
 		if errors.As(err, &pgErr) {
 
 			if pgErr.Code == "23503" && pgErr.ConstraintName == "usuario_asignado" {
-				return 0, ErrUsuarioAsignadoNoexiste
+				return 0, domain.ErrUsuarioAsignadoNoexiste
 			}
 			return 0, fmt.Errorf("Error inesperado, detalle: %v", err)
 		}
@@ -54,13 +54,13 @@ func (tm *tareasManager) RegistrarTarea(ctx context.Context, newTarea models.Tar
 	return id, nil
 }
 
-func (tm *tareasManager) Listar(ctx context.Context, IdUsuario int, completadas bool) ([]models.Tarea, error) {
+func (tm *tareasManager) Listar(ctx context.Context, IdUsuario int, completadas bool) ([]domain.Tarea, error) {
 
 	query := `SELECT id, titulo, fecha_creacion, completada, fecha_completada FROM tareas
 				WHERE id_usuario = $1
 				AND completada = ` + strconv.FormatBool(!completadas)
 
-	var tareas []models.Tarea
+	var tareas []domain.Tarea
 
 	filas, err := tm.db.Query(ctx, query, IdUsuario)
 
@@ -70,8 +70,8 @@ func (tm *tareasManager) Listar(ctx context.Context, IdUsuario int, completadas 
 	defer filas.Close()
 
 	for filas.Next() {
-		var t models.Tarea
-		err := filas.Scan(&t.Id, &t.Titulo, &t.Fecha_creacion, &t.Completada, &t.Fecha_completada)
+		var t domain.Tarea
+		err := filas.Scan(&t.Id, &t.Descripcion, &t.Fecha_creacion, &t.Completada, &t.Fecha_completada)
 		if err != nil {
 			return nil, fmt.Errorf("Error inesperado, detalle: %v", err)
 		}
@@ -93,7 +93,7 @@ func (tm *tareasManager) ModificarTitulo(ctx context.Context, IdTarea int, nuevo
 	err := tm.db.QueryRow(ctx, queryUpdate, nuevoTitulo, IdTarea).Scan(&id)
 
 	if errors.Is(err, pgx.ErrNoRows) {
-		return ErrTareaNoExiste
+		return domain.ErrTareaNoExiste
 	}
 
 	if err != nil {
@@ -115,7 +115,7 @@ func (tm *tareasManager) MarcarComoCompletada(ctx context.Context, IdTarea int, 
 	err := tm.db.QueryRow(ctx, queryUpdate, fechaCompletada, IdTarea).Scan(&id)
 
 	if errors.Is(err, pgx.ErrNoRows) {
-		return ErrTareaNoExiste
+		return domain.ErrTareaNoExiste
 	}
 
 	if err != nil {
@@ -125,13 +125,13 @@ func (tm *tareasManager) MarcarComoCompletada(ctx context.Context, IdTarea int, 
 	return nil
 }
 
-func (tm *tareasManager) BuscarEnTitulo(ctx context.Context, palabraABuscar string, IdUsuario int) ([]models.Tarea, error) {
+func (tm *tareasManager) BuscarEnTitulo(ctx context.Context, palabraABuscar string, IdUsuario int) ([]domain.Tarea, error) {
 
 	query := `SELECT id, titulo, fecha_creacion, completada, fecha_completada FROM tareas
 	WHERE titulo ILIKE '%' || $1 || '%'
 	AND id_usuario = $2`
 
-	var tareas []models.Tarea
+	var tareas []domain.Tarea
 
 	filas, err := tm.db.Query(ctx, query, palabraABuscar, IdUsuario)
 
@@ -141,8 +141,8 @@ func (tm *tareasManager) BuscarEnTitulo(ctx context.Context, palabraABuscar stri
 	defer filas.Close()
 
 	for filas.Next() {
-		var t models.Tarea
-		err := filas.Scan(&t.Id, &t.Titulo, &t.Fecha_creacion, &t.Completada, &t.Fecha_completada)
+		var t domain.Tarea
+		err := filas.Scan(&t.Id, &t.Descripcion, &t.Fecha_creacion, &t.Completada, &t.Fecha_completada)
 		if err != nil {
 			return nil, fmt.Errorf("Error inesperado, detalle: %v", err)
 		}
