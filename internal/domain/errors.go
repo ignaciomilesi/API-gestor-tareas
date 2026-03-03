@@ -15,6 +15,7 @@ var (
 	ErrEmailRequerido    = errors.New("El campo email no puede estar en blanco")
 	ErrPasswordRequerido = errors.New("El campo password no puede estar en blanco")
 	ErrPasswordCorto     = errors.New("El password es demasiado corto")
+	ErrIdNovalido        = errors.New("El id pasado debe ser mayor a 0")
 	ErrUsuarioExiste     = errors.New("El usuario ya existe")
 	ErrUsuarioNoExiste   = errors.New("El usuario no existe")
 )

@@ -47,6 +47,7 @@ func (um *userManager) GenerarNuevoUsuario(ctx context.Context, newUsuario domai
 	return id, nil
 }
 
+// verifica la existencia del usuario, devuelve el id del mismo
 func (um *userManager) ObternerId(ctx context.Context, usuario domain.Usuario) (int, error) {
 	query := `SELECT id, password_hash FROM usuarios
 				WHERE email = $1`
