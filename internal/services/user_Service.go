@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"context"
-	"errors"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
@@ -73,16 +72,9 @@ func (us *userService) CrearUsuario(ctx context.Context, email, password string)
 		Password_hash: string(hashedPassword),
 	}
 
-	_, erra := us.userManagerDb.GenerarNuevoUsuario(ctx, usuario)
+	_, err = us.userManagerDb.GenerarNuevoUsuario(ctx, usuario)
 
-	if erra != nil {
-		if errors.Is(err, domain.ErrEmailDuplicado) {
-			return domain.ErrUsuarioExiste
-		}
-		return fmt.Errorf("Error inesperado, detalle: %v", err)
-	}
-
-	return nil
+	return err
 }
 
 func (us *userService) ModificarContraseña(ctx context.Context, id int, password string) error {
@@ -109,16 +101,8 @@ func (us *userService) ModificarContraseña(ctx context.Context, id int, passwor
 		return fmt.Errorf("Error inesperado, detalle: %v", err)
 	}
 
-	err = us.userManagerDb.ModifcarContraseña(ctx, id, string(hashedPassword))
+	return us.userManagerDb.ModifcarContraseña(ctx, id, string(hashedPassword))
 
-	if err != nil {
-		if errors.Is(err, domain.ErrIdNoEncontrado) {
-			return domain.ErrIdNovalido
-		}
-		return fmt.Errorf("Error inesperado, detalle: %v", err)
-	}
-
-	return nil
 }
 
 func (us *userService) ObtenerId(ctx context.Context, email, password string) (int, error) {
@@ -132,6 +116,9 @@ func (us *userService) ObtenerId(ctx context.Context, email, password string) (i
 
 	if passwordTrimSpace == "" {
 		return 0, domain.ErrPasswordRequerido
+	}
+	if len(passwordTrimSpace) < 6 {
+		return 0, domain.ErrPasswordCorto
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword(
@@ -147,14 +134,6 @@ func (us *userService) ObtenerId(ctx context.Context, email, password string) (i
 		Password_hash: string(hashedPassword),
 	}
 
-	idEncontrado, erra := us.userManagerDb.ObternerId(ctx, usuarioAComprobar)
+	return us.userManagerDb.ObternerId(ctx, usuarioAComprobar)
 
-	if erra != nil {
-		if errors.Is(err, domain.ErrEmailNoEncontrado) || errors.Is(err, domain.ErrPasswordIncorrecto) {
-			return 0, domain.ErrUsuarioNoExiste
-		}
-		return 0, fmt.Errorf("Error inesperado, detalle: %v", err)
-	}
-
-	return idEncontrado, nil
 }
