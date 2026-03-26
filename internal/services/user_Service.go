@@ -46,21 +46,21 @@ func NewUserService(userManager userManagerDbInterface) userService {
 	}
 }
 
-func (us *userService) CrearUsuario(ctx context.Context, email, password string) error {
+func (us *userService) CrearUsuario(ctx context.Context, email, password string) (int, error) {
 
 	emailTrimSpace := strings.TrimSpace(email)
 	passwordTrimSpace := strings.TrimSpace(password)
 
 	if emailTrimSpace == "" {
-		return domain.ErrEmailRequerido
+		return 0, domain.ErrEmailRequerido
 	}
 
 	if passwordTrimSpace == "" {
-		return domain.ErrPasswordRequerido
+		return 0, domain.ErrPasswordRequerido
 	}
 
 	if len(passwordTrimSpace) < 6 {
-		return domain.ErrPasswordCorto
+		return 0, domain.ErrPasswordCorto
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword(
@@ -68,7 +68,7 @@ func (us *userService) CrearUsuario(ctx context.Context, email, password string)
 		bcrypt.DefaultCost,
 	)
 	if err != nil {
-		return fmt.Errorf("Error inesperado, detalle: %v", err)
+		return 0, fmt.Errorf("Error inesperado, detalle: %v", err)
 	}
 
 	usuario := domain.Usuario{
@@ -76,9 +76,7 @@ func (us *userService) CrearUsuario(ctx context.Context, email, password string)
 		Password_hash: string(hashedPassword),
 	}
 
-	_, err = us.userManagerDb.GenerarNuevoUsuario(ctx, usuario)
-
-	return err
+	return us.userManagerDb.GenerarNuevoUsuario(ctx, usuario)
 }
 
 func (us *userService) ModificarContraseña(ctx context.Context, id int, password string) error {

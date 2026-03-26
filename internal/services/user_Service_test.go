@@ -106,7 +106,7 @@ func TestCrearUsuario(t *testing.T) {
 			service := NewUserService(test.mockSetup())
 			ctx := t.Context()
 
-			err := service.CrearUsuario(ctx, test.email, test.password)
+			_, err := service.CrearUsuario(ctx, test.email, test.password)
 
 			if !errors.Is(err, test.errorEsperado) {
 
