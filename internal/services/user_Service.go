@@ -13,20 +13,24 @@ import (
 type userManagerDbInterface interface {
 	// Parámetros:
 	// 		- Usuario a generar
-	// Errores que devuelve:
+	// Salida:
+	// 		- Id del usuario generado
+	// Errores que puede devuelve:
 	// 		- ErrEmailDuplicado
 	GenerarNuevoUsuario(context.Context, domain.Usuario) (int, error)
 
 	// Parámetros:
 	// 		- id del usuario a modificar
 	//		- nuevo password_hash
-	// Errores que devuelve:
+	// Errores que puede devuelve:
 	// 		- ErrIdNoEncontrado
 	ModifcarContraseña(context.Context, int, string) error
 
 	// Parámetros:
 	// 		- Usuario al que quiero obtener el id
-	// Errores que devuelve:
+	// Salida:
+	// 		- Id del usuario
+	// Errores que puede devuelve:
 	// 		- ErrEmailNoEncontrado
 	//		- ErrPasswordIncorrecto
 	ObternerId(context.Context, domain.Usuario) (int, error)
