@@ -131,7 +131,7 @@ func TestModificarContraseña(t *testing.T) {
 			name:          "Id no valido",
 			id:            -1,
 			password:      "123456",
-			errorEsperado: domain.ErrIdNovalido,
+			errorEsperado: domain.ErrIdNoValido,
 			mockSetup: func() *userManagerDbMock {
 				return &userManagerDbMock{
 					ModifcarContraseñaFunc: func(cxt context.Context, id int, nuevoPassword string) error {

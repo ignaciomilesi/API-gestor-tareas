@@ -82,7 +82,7 @@ func (us *userService) CrearUsuario(ctx context.Context, email, password string)
 func (us *userService) ModificarContraseña(ctx context.Context, id int, password string) error {
 
 	if id < 1 {
-		return domain.ErrIdNovalido
+		return domain.ErrIdNoValido
 	}
 
 	passwordTrimSpace := strings.TrimSpace(password)
