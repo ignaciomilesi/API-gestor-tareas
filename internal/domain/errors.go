@@ -12,8 +12,11 @@ var (
 	ErrTareaNoExiste           = errors.New("La tarea buscada no existe")
 
 	// Errores de service
-	ErrEmailRequerido    = errors.New("El campo email no puede estar en blanco")
-	ErrPasswordRequerido = errors.New("El campo password no puede estar en blanco")
-	ErrPasswordCorto     = errors.New("El password es demasiado corto")
-	ErrIdNovalido        = errors.New("El id pasado debe ser mayor a 0")
+	ErrEmailRequerido              = errors.New("El campo email no puede estar en blanco")
+	ErrPasswordRequerido           = errors.New("El campo password no puede estar en blanco")
+	ErrPasswordCorto               = errors.New("El password es demasiado corto")
+	ErrIdNoValido                  = errors.New("El id pasado debe ser mayor a 0")
+	ErrDescripcionRequerida        = errors.New("El campo descripción no puede estar en blanco")
+	ErrFechaNoValida               = errors.New("La fecha pasada no es valida")
+	ErrParametroDeBusquedaNoValido = errors.New("El parámetro de búsqueda esta en blanco o es muy corto")
 )

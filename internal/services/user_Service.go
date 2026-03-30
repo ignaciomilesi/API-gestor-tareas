@@ -1,6 +1,7 @@
 package services
 
 import (
+	"api-gestor-tareas/config"
 	"api-gestor-tareas/internal/domain"
 	"fmt"
 
@@ -59,7 +60,7 @@ func (us *userService) CrearUsuario(ctx context.Context, email, password string)
 		return 0, domain.ErrPasswordRequerido
 	}
 
-	if len(passwordTrimSpace) < 6 {
+	if len(passwordTrimSpace) < config.LargoMinimoPassword {
 		return 0, domain.ErrPasswordCorto
 	}
 
@@ -91,7 +92,7 @@ func (us *userService) ModificarContraseña(ctx context.Context, id int, passwor
 		return domain.ErrPasswordRequerido
 	}
 
-	if len(passwordTrimSpace) < 6 {
+	if len(passwordTrimSpace) < config.LargoMinimoPassword {
 		return domain.ErrPasswordCorto
 	}
 
