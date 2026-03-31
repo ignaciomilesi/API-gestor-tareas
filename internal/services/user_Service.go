@@ -120,8 +120,8 @@ func (us *userService) ObtenerId(ctx context.Context, email, password string) (i
 	if passwordTrimSpace == "" {
 		return 0, domain.ErrPasswordRequerido
 	}
-	if len(passwordTrimSpace) < 6 {
-		return 0, domain.ErrPasswordCorto
+	if len(passwordTrimSpace) < config.LargoMinimoPassword {
+		return 0, domain.ErrPasswordIncorrecto
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword(
