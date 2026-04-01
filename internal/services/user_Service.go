@@ -25,16 +25,15 @@ type userManagerDbInterface interface {
 	//		- nuevo password_hash
 	// Errores que puede devuelve:
 	// 		- ErrIdNoEncontrado
-	ModifcarContraseña(context.Context, int, string) error
+	ModificarContraseña(context.Context, int, string) error
 
 	// Parámetros:
-	// 		- Usuario al que quiero obtener el id
+	// 		- email del usuario a verificar
 	// Salida:
-	// 		- Id del usuario
+	// 		- Usuario encontrado
 	// Errores que puede devuelve:
 	// 		- ErrEmailNoEncontrado
-	//		- ErrPasswordIncorrecto
-	ObternerId(context.Context, domain.Usuario) (int, error)
+	BuscarUsuarioPorMail(context.Context, string) (*domain.Usuario, error)
 }
 
 type userService struct {
@@ -104,7 +103,7 @@ func (us *userService) ModificarContraseña(ctx context.Context, id int, passwor
 		return fmt.Errorf("Error inesperado, detalle: %v", err)
 	}
 
-	return us.userManagerDb.ModifcarContraseña(ctx, id, string(hashedPassword))
+	return us.userManagerDb.ModificarContraseña(ctx, id, string(hashedPassword))
 
 }
 
@@ -120,23 +119,17 @@ func (us *userService) ObtenerId(ctx context.Context, email, password string) (i
 	if passwordTrimSpace == "" {
 		return 0, domain.ErrPasswordRequerido
 	}
-	if len(passwordTrimSpace) < config.LargoMinimoPassword {
+
+	usuarioEncontrado, err := us.userManagerDb.BuscarUsuarioPorMail(ctx, emailTrimSpace)
+	if err != nil {
+		return 0, err
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(usuarioEncontrado.Password_hash), []byte(passwordTrimSpace))
+	if err != nil {
 		return 0, domain.ErrPasswordIncorrecto
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword(
-		[]byte(passwordTrimSpace),
-		bcrypt.DefaultCost,
-	)
-	if err != nil {
-		return 0, fmt.Errorf("Error inesperado, detalle: %v", err)
-	}
-
-	usuarioAComprobar := domain.Usuario{
-		Email:         emailTrimSpace,
-		Password_hash: string(hashedPassword),
-	}
-
-	return us.userManagerDb.ObternerId(ctx, usuarioAComprobar)
+	return *usuarioEncontrado.Id, nil
 
 }

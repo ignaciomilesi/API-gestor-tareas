@@ -10,7 +10,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type userManager struct {
@@ -47,33 +46,28 @@ func (um *userManager) GenerarNuevoUsuario(ctx context.Context, newUsuario domai
 	return id, nil
 }
 
-// verifica la existencia del usuario, devuelve el id del mismo
-func (um *userManager) ObternerId(ctx context.Context, usuario domain.Usuario) (int, error) {
+func (um *userManager) BuscarUsuarioPorMail(ctx context.Context, email string) (*domain.Usuario, error) {
 	query := `SELECT id, password_hash FROM usuarios
 				WHERE email = $1`
 
-	var passwordHashEncontrado string
-	var id int
+	usuarioEncontrado := domain.Usuario{
+		Email: email,
+	}
 
-	err := um.db.QueryRow(ctx, query, usuario.Email).Scan(&id, &passwordHashEncontrado)
+	err := um.db.QueryRow(ctx, query, email).Scan(&usuarioEncontrado.Id, &usuarioEncontrado.Password_hash)
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return 0, domain.ErrEmailNoEncontrado
+			return nil, domain.ErrEmailNoEncontrado
 		}
-		return 0, fmt.Errorf("Error inesperado, detalle: %v", err)
+		return nil, fmt.Errorf("Error inesperado, detalle: %v", err)
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(passwordHashEncontrado), []byte(usuario.Password_hash))
-	if err != nil {
-		return 0, domain.ErrPasswordIncorrecto
-	}
-
-	return id, nil
+	return &usuarioEncontrado, nil
 
 }
 
-func (um *userManager) ModifcarContraseña(ctx context.Context, IdUsuario int, nuevoPasswordHash string) error {
+func (um *userManager) ModificarContraseña(ctx context.Context, IdUsuario int, nuevoPasswordHash string) error {
 
 	queryUpdate := `UPDATE usuarios
 				SET password_hash = $1

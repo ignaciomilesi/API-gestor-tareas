@@ -40,7 +40,7 @@ func (usm *userServiceMock) ObtenerId(ctx context.Context, email string, passwor
 	return usm.ObtenerIdfunc(ctx, email, password)
 }
 
-func TestSingin(t *testing.T) {
+func TestSignin(t *testing.T) {
 
 	tests := []struct {
 		name           string
@@ -139,13 +139,13 @@ func TestSingin(t *testing.T) {
 
 			// armo server
 			router := gin.Default()
-			router.POST("/singin", handler.Singin)
+			router.POST("/signin", handler.Signin)
 
 			// armo consulta
 			body := fmt.Sprintf(`{"email":"%s","password":"%s"}`, test.email, test.password)
 
 			//realizo la solicitud
-			req := httptest.NewRequest(http.MethodPost, "/singin", strings.NewReader(body))
+			req := httptest.NewRequest(http.MethodPost, "/signin", strings.NewReader(body))
 			req.Header.Set("Content-Type", "application/json")
 
 			// capturo la respuesta

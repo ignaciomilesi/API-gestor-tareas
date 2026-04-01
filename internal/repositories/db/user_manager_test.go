@@ -73,36 +73,22 @@ func TestGenerarNuevoUsuario(t *testing.T) {
 
 }
 
-func TestObternerId(t *testing.T) {
+func TestBuscarUsuarioPorMail(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		usuarioTest   domain.Usuario
+		email         string
 		errorEsperado error
 	}{
 		{
-			name: "mail correcto, password correcto",
-			usuarioTest: domain.Usuario{
-				Email:         "prueba@prueba.com",
-				Password_hash: "4567",
-			},
+			name:          "mail correcto",
+			email:         "prueba@prueba.com",
 			errorEsperado: nil,
 		},
 		{
-			name: "mail incorrecto, password correcto",
-			usuarioTest: domain.Usuario{
-				Email:         "mailPruebaIncorrecto@prueba.com",
-				Password_hash: "4567",
-			},
+			name:          "mail incorrecto",
+			email:         "mailPruebaIncorrecto@prueba.com",
 			errorEsperado: domain.ErrEmailNoEncontrado,
-		},
-		{
-			name: "mail correcto, password incorrecto",
-			usuarioTest: domain.Usuario{
-				Email:         "prueba@prueba.com",
-				Password_hash: "password incorrecto",
-			},
-			errorEsperado: domain.ErrPasswordIncorrecto,
 		},
 	}
 
@@ -114,7 +100,7 @@ func TestObternerId(t *testing.T) {
 
 		t.Run(test.name, func(t *testing.T) {
 
-			_, err := um.ObternerId(ctx, test.usuarioTest)
+			_, err := um.BuscarUsuarioPorMail(ctx, test.email)
 
 			if !errors.Is(err, test.errorEsperado) {
 
@@ -126,7 +112,7 @@ func TestObternerId(t *testing.T) {
 
 }
 
-func TestModifcarContraseña(t *testing.T) {
+func TestModificarContraseña(t *testing.T) {
 	tests := []struct {
 		name          string
 		id            int
@@ -152,7 +138,7 @@ func TestModifcarContraseña(t *testing.T) {
 
 		t.Run(test.name, func(t *testing.T) {
 
-			err := um.ModifcarContraseña(ctx, test.id, "45678")
+			err := um.ModificarContraseña(ctx, test.id, "45678")
 
 			if !errors.Is(err, test.errorEsperado) {
 

@@ -10,9 +10,9 @@ import (
 )
 
 type userManagerDbMock struct {
-	GenerarNuevoUsuarioFunc func(cxt context.Context, nuevoUsario domain.Usuario) (int, error)
-	ModifcarContraseñaFunc  func(cxt context.Context, id int, nuevoPassword string) error
-	ObternerIdFunc          func(cxt context.Context, usuarioAVerificar domain.Usuario) (int, error)
+	GenerarNuevoUsuarioFunc  func(cxt context.Context, nuevoUsario domain.Usuario) (int, error)
+	ModificarContraseñaFunc  func(cxt context.Context, id int, nuevoPassword string) error
+	BuscarUsuarioPorMailFunc func(cxt context.Context, mail string) (*domain.Usuario, error)
 }
 
 func (umm *userManagerDbMock) GenerarNuevoUsuario(cxt context.Context, nuevoUsario domain.Usuario) (int, error) {
@@ -22,18 +22,18 @@ func (umm *userManagerDbMock) GenerarNuevoUsuario(cxt context.Context, nuevoUsar
 	return umm.GenerarNuevoUsuarioFunc(cxt, nuevoUsario)
 }
 
-func (umm *userManagerDbMock) ModifcarContraseña(cxt context.Context, id int, nuevoPassword string) error {
-	if umm.ModifcarContraseñaFunc == nil {
-		return fmt.Errorf("ModifcarContraseñaFunc no implementado")
+func (umm *userManagerDbMock) ModificarContraseña(cxt context.Context, id int, nuevoPassword string) error {
+	if umm.ModificarContraseñaFunc == nil {
+		return fmt.Errorf("ModificarContraseñaFunc no implementado")
 	}
-	return umm.ModifcarContraseñaFunc(cxt, id, nuevoPassword)
+	return umm.ModificarContraseñaFunc(cxt, id, nuevoPassword)
 }
 
-func (umm *userManagerDbMock) ObternerId(cxt context.Context, usuarioAVerificar domain.Usuario) (int, error) {
-	if umm.ObternerIdFunc == nil {
-		return 0, fmt.Errorf("ObternerIdFunc no implementado")
+func (umm *userManagerDbMock) BuscarUsuarioPorMail(cxt context.Context, mail string) (*domain.Usuario, error) {
+	if umm.BuscarUsuarioPorMailFunc == nil {
+		return nil, fmt.Errorf("BuscarUsuarioPorMailFunc no implementado")
 	}
-	return umm.ObternerIdFunc(cxt, usuarioAVerificar)
+	return umm.BuscarUsuarioPorMailFunc(cxt, mail)
 }
 
 func TestCrearUsuario(t *testing.T) {
@@ -134,7 +134,7 @@ func TestModificarContraseña(t *testing.T) {
 			errorEsperado: domain.ErrIdNoValido,
 			mockSetup: func() *userManagerDbMock {
 				return &userManagerDbMock{
-					ModifcarContraseñaFunc: func(cxt context.Context, id int, nuevoPassword string) error {
+					ModificarContraseñaFunc: func(cxt context.Context, id int, nuevoPassword string) error {
 						return nil
 					},
 				}
@@ -147,7 +147,7 @@ func TestModificarContraseña(t *testing.T) {
 			errorEsperado: domain.ErrPasswordRequerido,
 			mockSetup: func() *userManagerDbMock {
 				return &userManagerDbMock{
-					ModifcarContraseñaFunc: func(cxt context.Context, id int, nuevoPassword string) error {
+					ModificarContraseñaFunc: func(cxt context.Context, id int, nuevoPassword string) error {
 						return nil
 					},
 				}
@@ -160,7 +160,7 @@ func TestModificarContraseña(t *testing.T) {
 			errorEsperado: domain.ErrPasswordCorto,
 			mockSetup: func() *userManagerDbMock {
 				return &userManagerDbMock{
-					ModifcarContraseñaFunc: func(cxt context.Context, id int, nuevoPassword string) error {
+					ModificarContraseñaFunc: func(cxt context.Context, id int, nuevoPassword string) error {
 						return nil
 					},
 				}
@@ -173,7 +173,7 @@ func TestModificarContraseña(t *testing.T) {
 			errorEsperado: domain.ErrIdNoEncontrado,
 			mockSetup: func() *userManagerDbMock {
 				return &userManagerDbMock{
-					ModifcarContraseñaFunc: func(cxt context.Context, id int, nuevoPassword string) error {
+					ModificarContraseñaFunc: func(cxt context.Context, id int, nuevoPassword string) error {
 						return domain.ErrIdNoEncontrado
 					},
 				}
@@ -216,8 +216,8 @@ func TestObtenerId(t *testing.T) {
 			errorEsperado: domain.ErrEmailRequerido,
 			mockSetup: func() *userManagerDbMock {
 				return &userManagerDbMock{
-					ObternerIdFunc: func(cxt context.Context, usuarioAVerificar domain.Usuario) (int, error) {
-						return 0, nil
+					BuscarUsuarioPorMailFunc: func(cxt context.Context, mail string) (*domain.Usuario, error) {
+						return nil, nil
 					},
 				}
 			},
@@ -229,8 +229,8 @@ func TestObtenerId(t *testing.T) {
 			errorEsperado: domain.ErrPasswordRequerido,
 			mockSetup: func() *userManagerDbMock {
 				return &userManagerDbMock{
-					ObternerIdFunc: func(cxt context.Context, usuarioAVerificar domain.Usuario) (int, error) {
-						return 0, nil
+					BuscarUsuarioPorMailFunc: func(cxt context.Context, mail string) (*domain.Usuario, error) {
+						return nil, nil
 					},
 				}
 			},
@@ -242,8 +242,8 @@ func TestObtenerId(t *testing.T) {
 			errorEsperado: domain.ErrPasswordCorto,
 			mockSetup: func() *userManagerDbMock {
 				return &userManagerDbMock{
-					ObternerIdFunc: func(cxt context.Context, usuarioAVerificar domain.Usuario) (int, error) {
-						return 0, nil
+					BuscarUsuarioPorMailFunc: func(cxt context.Context, mail string) (*domain.Usuario, error) {
+						return nil, nil
 					},
 				}
 			},
@@ -255,8 +255,8 @@ func TestObtenerId(t *testing.T) {
 			errorEsperado: domain.ErrEmailNoEncontrado,
 			mockSetup: func() *userManagerDbMock {
 				return &userManagerDbMock{
-					ObternerIdFunc: func(cxt context.Context, usuarioAVerificar domain.Usuario) (int, error) {
-						return 0, domain.ErrEmailNoEncontrado
+					BuscarUsuarioPorMailFunc: func(cxt context.Context, mail string) (*domain.Usuario, error) {
+						return nil, domain.ErrEmailNoEncontrado
 					},
 				}
 			},
@@ -268,8 +268,10 @@ func TestObtenerId(t *testing.T) {
 			errorEsperado: domain.ErrPasswordIncorrecto,
 			mockSetup: func() *userManagerDbMock {
 				return &userManagerDbMock{
-					ObternerIdFunc: func(cxt context.Context, usuarioAVerificar domain.Usuario) (int, error) {
-						return 0, domain.ErrPasswordIncorrecto
+					BuscarUsuarioPorMailFunc: func(cxt context.Context, mail string) (*domain.Usuario, error) {
+						return &domain.Usuario{
+							Password_hash: "abc",
+						}, nil
 					},
 				}
 			},
