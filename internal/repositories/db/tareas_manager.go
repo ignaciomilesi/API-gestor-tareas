@@ -46,8 +46,8 @@ func (tm *tareasManager) RegistrarTarea(ctx context.Context, newTarea domain.Tar
 			if pgErr.Code == "23503" && pgErr.ConstraintName == "usuario_asignado" {
 				return 0, domain.ErrUsuarioAsignadoNoexiste
 			}
-			return 0, fmt.Errorf("Error inesperado, detalle: %v", err)
 		}
+		return 0, fmt.Errorf("Error inesperado, detalle: %v", err)
 
 	}
 
