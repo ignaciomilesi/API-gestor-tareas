@@ -5,8 +5,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type userServiceInterface interface {
@@ -47,11 +49,13 @@ type userServiceInterface interface {
 
 type userHandler struct {
 	userService userServiceInterface
+	jwtSecret   string
 }
 
-func NewUserHandler(nuevoUserService userServiceInterface) *userHandler {
+func NewUserHandler(nuevoUserService userServiceInterface, secret string) *userHandler {
 	return &userHandler{
 		userService: nuevoUserService,
+		jwtSecret:   secret,
 	}
 }
 
@@ -66,7 +70,7 @@ func (h *userHandler) Signin(c *gin.Context) {
 		return
 	}
 
-	id, err := h.userService.CrearUsuario(c.Request.Context(), req.Email, req.Password)
+	_, err := h.userService.CrearUsuario(c.Request.Context(), req.Email, req.Password)
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrEmailRequerido),
@@ -84,7 +88,7 @@ func (h *userHandler) Signin(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{"id": id})
+	c.JSON(200, gin.H{"resp": "usuario generado"})
 }
 
 func (h *userHandler) Login(c *gin.Context) {
@@ -116,12 +120,28 @@ func (h *userHandler) Login(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{"id": id})
+	// generar JWT
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": id,
+		"email":   req.Email,
+		"exp":     time.Now().Add(24 * time.Hour).Unix(),
+	})
+
+	tokenString, err := token.SignedString([]byte(h.jwtSecret))
+	if err != nil {
+		c.JSON(500, gin.H{"error": "error generando token"})
+		return
+	}
+
+	// Devuelvo token
+	c.JSON(200, gin.H{
+		"token": tokenString,
+	})
 }
 
 func (h *userHandler) ActualizarContraseña(c *gin.Context) {
 	var req struct {
-		Id       int    `json:"id" binding:"required"` //  no vacío
+		//Id       int    `json:"id" binding:"required"` //  no vacío
 		Password string `json:"password" binding:"required"`
 	}
 
@@ -130,7 +150,21 @@ func (h *userHandler) ActualizarContraseña(c *gin.Context) {
 		return
 	}
 
-	err := h.userService.ModificarContraseña(c.Request.Context(), req.Id, req.Password)
+	// obtengo el id del contexto
+	userIDValue, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(401, gin.H{"error": "usuario no autenticado"})
+		return
+	}
+
+	// lo transformo en int
+	userID, ok := userIDValue.(int)
+	if !ok {
+		c.JSON(500, gin.H{"error": "error interno"})
+		return
+	}
+
+	err := h.userService.ModificarContraseña(c.Request.Context(), userID, req.Password)
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrIdNoValido),

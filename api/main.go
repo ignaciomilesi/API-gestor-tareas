@@ -11,6 +11,20 @@ func main() {
 
 	r := gin.Default() // creo Gin con el middleware default
 
+	// // públicas (sin middleware)
+	// r.POST("/login", userHandler.Login)
+	// r.POST("/signup", userHandler.Signup)
+
+	// // protegidas
+	// auth := r.Group("/api")
+	// auth.Use(AuthMiddleware(config.JWTSecret))
+
+	// auth.POST("/tareas", tareasHandler.Nueva)
+	// auth.GET("/tareas", tareasHandler.Listar)
+	// auth.PUT("/tareas", tareasHandler.Modificar)
+	// auth.POST("/tareas/finalizar", tareasHandler.Finalizar)
+	// auth.GET("/tareas/buscar", tareasHandler.Buscar)
+
 	// devolvemos un json
 	r.GET("/ping", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
@@ -23,16 +37,3 @@ func main() {
 		log.Fatalf("failed to run server: %v", err)
 	}
 }
-
-/*
-repo := repository.NewTaskRepository(db)
-service := services.NewTaskService(repo)
-handler := handlers.NewTaskHandler(service)
-
-auth := r.Group("/tasks")
-auth.Use(middleware.JWTAuth(secret))
-{
-    auth.POST("", handler.CreateTask)
-    auth.GET("", handler.GetTasks)
-}
-*/

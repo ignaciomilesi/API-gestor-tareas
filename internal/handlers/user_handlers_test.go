@@ -135,7 +135,7 @@ func TestSignin(t *testing.T) {
 
 		t.Run(test.name, func(t *testing.T) {
 
-			handler := NewUserHandler(test.mockSetup())
+			handler := NewUserHandler(test.mockSetup(), "secret_prueba")
 
 			// armo server
 			router := gin.Default()
@@ -255,7 +255,7 @@ func TestLogin(t *testing.T) {
 
 		t.Run(test.name, func(t *testing.T) {
 
-			handler := NewUserHandler(test.mockSetup())
+			handler := NewUserHandler(test.mockSetup(), "secret_prueba")
 
 			// armo server
 			router := gin.Default()
@@ -375,14 +375,17 @@ func TestActualizarContraseña(t *testing.T) {
 
 		t.Run(test.name, func(t *testing.T) {
 
-			handler := NewUserHandler(test.mockSetup())
+			handler := NewUserHandler(test.mockSetup(), "secret_prueba")
 
 			// armo server
 			router := gin.Default()
-			router.POST("/actualizarContraseña", handler.ActualizarContraseña)
+			router.POST("/actualizarContraseña", func(c *gin.Context) {
+				c.Set("user_id", test.id) // le mockeo el user_id
+				handler.ActualizarContraseña(c)
+			})
 
 			// armo consulta
-			body := fmt.Sprintf(`{"id":%d,"password":"%s"}`, test.id, test.password)
+			body := fmt.Sprintf(`{"password":"%s"}`, test.password)
 
 			//realizo la solicitud
 			req := httptest.NewRequest(http.MethodPost, "/actualizarContraseña", strings.NewReader(body))

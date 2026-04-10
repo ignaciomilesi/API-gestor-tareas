@@ -164,10 +164,13 @@ func TestNueva(t *testing.T) {
 
 			// armo server
 			router := gin.Default()
-			router.POST("/test", handler.Nueva)
+			router.POST("/test", func(c *gin.Context) {
+				c.Set("user_id", test.id) // le mockeo el user_id
+				handler.Nueva(c)
+			})
 
 			// armo consulta
-			body := fmt.Sprintf(`{"descripcion":"%s","fecha":"%s","id_usuario":%d}`, test.descripcion, test.fecha, test.id)
+			body := fmt.Sprintf(`{"descripcion":"%s","fecha":"%s"}`, test.descripcion, test.fecha)
 
 			//realizo la solicitud
 			req := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader(body))
@@ -245,10 +248,13 @@ func TestListar(t *testing.T) {
 
 			// armo server
 			router := gin.Default()
-			router.POST("/test", handler.Listar)
+			router.POST("/test", func(c *gin.Context) {
+				c.Set("user_id", test.id) // le mockeo el user_id
+				handler.Listar(c)
+			})
 
 			// armo consulta
-			body := fmt.Sprintf(`{"id_usuario":%d, "completadas":%t}`, test.id, test.completadas)
+			body := fmt.Sprintf(`{"completadas":%t}`, test.completadas)
 
 			//realizo la solicitud
 			req := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader(body))
@@ -540,10 +546,13 @@ func TestBuscar(t *testing.T) {
 
 			// armo server
 			router := gin.Default()
-			router.POST("/test", handler.Buscar)
+			router.POST("/test", func(c *gin.Context) {
+				c.Set("user_id", test.id) // le mockeo el user_id
+				handler.Buscar(c)
+			})
 
 			// armo consulta
-			body := fmt.Sprintf(`{"parametro_busqueda":"%s", "id_usuario":%d}`, test.parametroDeBusqueda, test.id)
+			body := fmt.Sprintf(`{"parametro_busqueda":"%s"}`, test.parametroDeBusqueda)
 
 			//realizo la solicitud
 			req := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader(body))

@@ -76,9 +76,9 @@ func NewTareaHandler(nuevoTareaService tareasServiceInterface) *tareasHandler {
 func (th *tareasHandler) Nueva(c *gin.Context) {
 
 	var req struct {
-		Descrip   string `json:"descripcion" binding:"required"`
-		Fecha     string `json:"fecha" binding:"required"`
-		IdUsuario int    `json:"id_usuario" binding:"required"`
+		Descrip string `json:"descripcion" binding:"required"`
+		Fecha   string `json:"fecha" binding:"required"`
+		// IdUsuario int    `json:"id_usuario" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -98,7 +98,21 @@ func (th *tareasHandler) Nueva(c *gin.Context) {
 		return
 	}
 
-	id, err := th.tareaService.CrearTarea(c.Request.Context(), req.Descrip, fechaParseada, req.IdUsuario)
+	// obtengo el id del contexto
+	userIDValue, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(401, gin.H{"error": "usuario no autenticado"})
+		return
+	}
+
+	// lo transformo en int
+	userID, ok := userIDValue.(int)
+	if !ok {
+		c.JSON(500, gin.H{"error": "error interno"})
+		return
+	}
+
+	id, err := th.tareaService.CrearTarea(c.Request.Context(), req.Descrip, fechaParseada, userID)
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrDescripcionRequerida),
@@ -131,7 +145,7 @@ func (th *tareasHandler) Nueva(c *gin.Context) {
 func (th *tareasHandler) Listar(c *gin.Context) {
 
 	var req struct {
-		IdUsuario   int  `json:"id_usuario" binding:"required"`
+		//IdUsuario   int  `json:"id_usuario" binding:"required"`
 		Completadas bool `json:"completadas" `
 	}
 
@@ -142,8 +156,21 @@ func (th *tareasHandler) Listar(c *gin.Context) {
 		})
 		return
 	}
+	// obtengo el id del contexto
+	userIDValue, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(401, gin.H{"error": "usuario no autenticado"})
+		return
+	}
 
-	lista, err := th.tareaService.ListarTareas(c.Request.Context(), req.IdUsuario, req.Completadas)
+	// lo transformo en int
+	userID, ok := userIDValue.(int)
+	if !ok {
+		c.JSON(500, gin.H{"error": "error interno"})
+		return
+	}
+
+	lista, err := th.tareaService.ListarTareas(c.Request.Context(), userID, req.Completadas)
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrIdNoValido):
@@ -262,7 +289,7 @@ func (th *tareasHandler) Finalizar(c *gin.Context) {
 func (th *tareasHandler) Buscar(c *gin.Context) {
 
 	var req struct {
-		IdUsuario         int    `json:"id_usuario" binding:"required"`
+		//IdUsuario         int    `json:"id_usuario" binding:"required"`
 		ParametroBusqueda string `json:"parametro_busqueda" binding:"required" `
 	}
 
@@ -273,8 +300,21 @@ func (th *tareasHandler) Buscar(c *gin.Context) {
 		})
 		return
 	}
+	// obtengo el id del contexto
+	userIDValue, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(401, gin.H{"error": "usuario no autenticado"})
+		return
+	}
 
-	lista, err := th.tareaService.Buscar(c.Request.Context(), req.ParametroBusqueda, req.IdUsuario)
+	// lo transformo en int
+	userID, ok := userIDValue.(int)
+	if !ok {
+		c.JSON(500, gin.H{"error": "error interno"})
+		return
+	}
+
+	lista, err := th.tareaService.Buscar(c.Request.Context(), req.ParametroBusqueda, userID)
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrIdNoValido),
