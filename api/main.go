@@ -58,6 +58,8 @@ func main() {
 	auth := r.Group("/api")
 	auth.Use(middleware.AuthMiddleware(os.Getenv("JWT_SECRET"))) // aplico el middleware
 
+	auth.PUT("/user/password", userHandler.ActualizarContraseña)
+
 	auth.POST("/tareas", tareasHandler.Nueva)
 	auth.GET("/tareas", tareasHandler.Listar)
 	auth.PUT("/tareas", tareasHandler.Modificar)

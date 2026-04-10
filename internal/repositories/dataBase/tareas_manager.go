@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -57,8 +56,12 @@ func (tm *tareasManager) RegistrarTarea(ctx context.Context, newTarea domain.Tar
 func (tm *tareasManager) Listar(ctx context.Context, IdUsuario int, completadas bool) ([]domain.Tarea, error) {
 
 	query := `SELECT id, titulo, fecha_creacion, completada, fecha_completada FROM tareas
-				WHERE id_usuario = $1
-				AND completada = ` + strconv.FormatBool(!completadas)
+				WHERE id_usuario = $1`
+
+	//si no quiere las completadas, las elimino
+	if !completadas {
+		query += ` AND completada = false`
+	}
 
 	var tareas []domain.Tarea
 
