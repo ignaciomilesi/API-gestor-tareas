@@ -248,16 +248,17 @@ func TestListar(t *testing.T) {
 
 			// armo server
 			router := gin.Default()
+
 			router.POST("/test", func(c *gin.Context) {
 				c.Set("user_id", test.id) // le mockeo el user_id
 				handler.Listar(c)
 			})
 
-			// armo consulta
-			body := fmt.Sprintf(`{"completadas":%t}`, test.completadas)
+			// armo el path con query
+			path := fmt.Sprintf(`/test?completadas=%t}`, test.completadas)
 
 			//realizo la solicitud
-			req := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader(body))
+			req := httptest.NewRequest(http.MethodPost, path, nil)
 			req.Header.Set("Content-Type", "application/json")
 
 			// capturo la respuesta
@@ -491,7 +492,7 @@ func TestBuscar(t *testing.T) {
 					},
 				}
 			},
-			parametroDeBusqueda: "Busqueda de prueba",
+			parametroDeBusqueda: "BusquedaDePrueba",
 			id:                  7,
 			codigoEsperado:      200,
 		},
@@ -504,7 +505,7 @@ func TestBuscar(t *testing.T) {
 					},
 				}
 			},
-			parametroDeBusqueda: "Busqueda de prueba",
+			parametroDeBusqueda: "BusquedaDePrueba",
 			id:                  -1,
 			codigoEsperado:      400,
 		},
@@ -551,11 +552,11 @@ func TestBuscar(t *testing.T) {
 				handler.Buscar(c)
 			})
 
-			// armo consulta
-			body := fmt.Sprintf(`{"parametro_busqueda":"%s"}`, test.parametroDeBusqueda)
+			// armo el path con query
+			path := fmt.Sprintf(`/test?parametro_busqueda=%s}`, test.parametroDeBusqueda)
 
 			//realizo la solicitud
-			req := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader(body))
+			req := httptest.NewRequest(http.MethodPost, path, nil)
 			req.Header.Set("Content-Type", "application/json")
 
 			// capturo la respuesta

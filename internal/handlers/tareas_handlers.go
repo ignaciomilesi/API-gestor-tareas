@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -144,18 +145,13 @@ func (th *tareasHandler) Nueva(c *gin.Context) {
 
 func (th *tareasHandler) Listar(c *gin.Context) {
 
-	var req struct {
-		//IdUsuario   int  `json:"id_usuario" binding:"required"`
-		Completadas bool `json:"completadas" `
+	// obtengo el campo completada de la query
+	query := c.Query("completadas")
+	completadas, err := strconv.ParseBool(query)
+	if err != nil {
+		completadas = false // valor por defecto si viene mal
 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(400, gin.H{
-			"error":   "Campos requeridos no válidos",
-			"detalle": err,
-		})
-		return
-	}
 	// obtengo el id del contexto
 	userIDValue, exists := c.Get("user_id")
 	if !exists {
@@ -170,7 +166,7 @@ func (th *tareasHandler) Listar(c *gin.Context) {
 		return
 	}
 
-	lista, err := th.tareaService.ListarTareas(c.Request.Context(), userID, req.Completadas)
+	lista, err := th.tareaService.ListarTareas(c.Request.Context(), userID, completadas)
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrIdNoValido):
@@ -288,18 +284,15 @@ func (th *tareasHandler) Finalizar(c *gin.Context) {
 
 func (th *tareasHandler) Buscar(c *gin.Context) {
 
-	var req struct {
-		//IdUsuario         int    `json:"id_usuario" binding:"required"`
-		ParametroBusqueda string `json:"parametro_busqueda" binding:"required" `
-	}
+	parametroBusqueda := c.Query("parametro_busqueda")
 
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if parametroBusqueda == "" {
 		c.JSON(400, gin.H{
-			"error":   "Campos requeridos no válidos (json)",
-			"detalle": err,
+			"error": "Campos requeridos no válidos (query en blanco)",
 		})
 		return
 	}
+
 	// obtengo el id del contexto
 	userIDValue, exists := c.Get("user_id")
 	if !exists {
@@ -314,7 +307,7 @@ func (th *tareasHandler) Buscar(c *gin.Context) {
 		return
 	}
 
-	lista, err := th.tareaService.Buscar(c.Request.Context(), req.ParametroBusqueda, userID)
+	lista, err := th.tareaService.Buscar(c.Request.Context(), parametroBusqueda, userID)
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrIdNoValido),
