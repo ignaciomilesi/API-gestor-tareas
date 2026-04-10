@@ -1,4 +1,4 @@
-package db
+package dataBase
 
 import (
 	"api-gestor-tareas/internal/domain"

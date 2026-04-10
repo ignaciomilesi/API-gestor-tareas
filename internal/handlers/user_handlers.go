@@ -59,7 +59,7 @@ func NewUserHandler(nuevoUserService userServiceInterface, secret string) *userH
 	}
 }
 
-func (h *userHandler) Signin(c *gin.Context) {
+func (h *userHandler) Signup(c *gin.Context) {
 	var req struct {
 		Email    string `json:"email" binding:"required,email"` //  no vacío, formato de email válido
 		Password string `json:"password" binding:"required"`

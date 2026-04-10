@@ -40,8 +40,8 @@ type userService struct {
 	userManagerDb userManagerDbInterface
 }
 
-func NewUserService(userManager userManagerDbInterface) userService {
-	return userService{
+func NewUserService(userManager userManagerDbInterface) *userService {
+	return &userService{
 		userManagerDb: userManager,
 	}
 }

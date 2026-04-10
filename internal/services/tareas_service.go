@@ -51,8 +51,8 @@ type tareaService struct {
 	tareaManagerDb tareaManagerDbInterface
 }
 
-func NewTareaService(tareaManager tareaManagerDbInterface) tareaService {
-	return tareaService{
+func NewTareaService(tareaManager tareaManagerDbInterface) *tareaService {
+	return &tareaService{
 		tareaManagerDb: tareaManager,
 	}
 }

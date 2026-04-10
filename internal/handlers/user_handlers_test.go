@@ -40,7 +40,7 @@ func (usm *userServiceMock) ObtenerId(ctx context.Context, email string, passwor
 	return usm.ObtenerIdfunc(ctx, email, password)
 }
 
-func TestSignin(t *testing.T) {
+func TestSignup(t *testing.T) {
 
 	tests := []struct {
 		name           string
@@ -139,7 +139,7 @@ func TestSignin(t *testing.T) {
 
 			// armo server
 			router := gin.Default()
-			router.POST("/signin", handler.Signin)
+			router.POST("/signin", handler.Signup)
 
 			// armo consulta
 			body := fmt.Sprintf(`{"email":"%s","password":"%s"}`, test.email, test.password)
