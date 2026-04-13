@@ -1,0 +1,18 @@
+CREATE TABLE usuarios (
+    id SERIAL PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL
+);
+
+CREATE TABLE tareas (
+    id SERIAL PRIMARY KEY,
+    titulo TEXT NOT NULL,
+    fecha_creacion DATE NOT NULL,
+    completada BOOLEAN NOT NULL DEFAULT false,
+    fecha_completada DATE,
+    id_usuario INTEGER NOT NULL,
+    
+    CONSTRAINT fk_usuario
+        FOREIGN KEY (id_usuario)
+        REFERENCES usuarios(id)
+);
